@@ -2,6 +2,7 @@ package com.lambdaschool.javaorders;
 
 import com.lambdaschool.javaorders.models.Agent;
 import com.lambdaschool.javaorders.models.Customer;
+import com.lambdaschool.javaorders.models.Order;
 import com.lambdaschool.javaorders.repositories.AgentRepository;
 import com.lambdaschool.javaorders.repositories.CustomerRepository;
 import com.lambdaschool.javaorders.repositories.OrderRepository;
@@ -25,41 +26,78 @@ public class OrderController {
     OrderRepository orderRepo;
 
 
-    @GetMapping("/customer")
+
+//
+//    GET /agents/agentcode/{agentcode}
+//
+//    POST /customers - adds a customer
+//
+//    POST /orders - adds an order
+//
+//    POST /agents - adds an agent
+//
+//    PUT /customers/custocode/{custcode} - updates a customer based on custcode
+//
+//    PUT /orders/ordnum/{ordnum} - updates an order based on ordnum
+//
+//    PUT /agents/agentcode/{agentcode} - updates an agent based on ordnum
+//
+//    DELETE /customers/custcode/{custcode} - Deletes a customer based off of their custcode and deletes all their associated orders
+//
+//
+//    DELETE agents/agentcode/{agentcode} - Deletes an agent if they are not assigned to a customer or order (Stretch Goal)
+
+    //    GET /customers - returns all the customer
+    @GetMapping("/customers")
     public List<Customer> getAllCustomers() {
         return customerRepo.findAll();
     }
-//    /customer/order - Returns all customers with their orders
+
     @GetMapping("/customer/order")
     public List<Object[]> getAllCustomersWithOrders() {
         return customerRepo.ordersAndCustomers();
     }
 
-///customer/name/{custname} - Returns all orders for a particular based on name
     @GetMapping("/customer/name/{custname}")
     public List<Object[]> customerByName(@PathVariable String custName) {
         return customerRepo.ordersAndCustomersByName(custName);
     }
-
-///customer/order/{custcode} - Returns all orders for a particular customer based on custcode
 
     @GetMapping("/customer/order/{custcode}")
     public List<Object[]> customerByCode(@PathVariable Long custCode) {
         return customerRepo.ordersAndCustomersByCode(custCode);
     }
 
-///agents - Returns all agents with their customers
-    @GetMapping("/agents")
-    public List<Object> agentsWithCustomers() {
-        return agentRepo.agentsAndOrders();
+    //    GET /customers/custcode/{custcode}
+    @GetMapping("/customers/custcode/{custcode}")
+    public Customer getCustomer(@PathVariable long custcode){
+        return customerRepo.findById(custcode).orElseThrow();
     }
-///agents/orders - Return a list with the agents name and associated order number and order description
+
+    //    GET /agents - return all the agents
+    @GetMapping("/agents")
+    public List<Agent> getAllAgents(){
+        return agentRepo.findAll();
+    }
 
     @GetMapping("/agents/orders")
     public List<Object> agentsWithOrders() {
         return agentRepo.agentsAndOrders();
     }
-///customer/{custcode} - Deletes a customer based off of their custcode and deletes all their associated orders
+
+//    GET /orders - return all the orders
+    @GetMapping("/orders")
+    public List<Order> getAllOrders(){
+        return orderRepo.findAll();
+    }
+
+    //    GET /orders/ordnum/{ordnum}
+    @GetMapping("/orders/ordnum/{ordnum}")
+    public Order getOrderByOrdnum(@PathVariable long ordnum) {
+        return orderRepo.findById(ordnum).orElseThrow();
+    }
+
+
 
     @DeleteMapping("customer/{custCode")
     public Customer deleteCustomerByCode(@PathVariable Long custCode) {
@@ -72,9 +110,8 @@ public class OrderController {
         }
     }
 
-///agents/{agentcode} - Deletes an agent if they are not assigned to a customer or order (Stretch Goal)
     @DeleteMapping("/agent/{agentCode")
-    public Agent deletAgentByCode(@PathVariable Long agentCode) {
+    public Agent deleteAgentByCode(@PathVariable Long agentCode) {
         final Agent agent = agentRepo.findAgentByAgentcode(agentCode);
         if(agent != null) {
             agentRepo.delete(agent);
@@ -82,5 +119,16 @@ public class OrderController {
         } else {
             return null;
         }
+    }
+    //    DELETE /orders/ordnum/{ordnum} - deletes an order based off its ordnum
+
+    @DeleteMapping("/orders/ordnum/{ordnum}")
+    public Order deleteOrder(@PathVariable long ordnum){
+        var foundOrder = orderRepo.findById(ordnum);
+        if(foundOrder.isPresent()){
+            orderRepo.deleteById(ordnum);
+            return foundOrder.get();
+        }
+        return null;
     }
 }
